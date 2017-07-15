@@ -14,12 +14,14 @@ import java.util.StringJoiner;
  * Created by Aleksandr Shevkunenko on 14.07.2017.
  */
 public class FileViewer {
+
     static final String COMMAND_PREVIEW = "You can use the following commands:\n" +
             "pwd - to see the current (working) directory;\n" +
             "ls - to see the content of the current directory;\n" +
             "cat - to see the content of the text file;\n" +
             "cd - to change the current directory;\n" +
             "mk - to create an empty file in the current directory;\n" +
+            "rm - to remove a file;\n" +
             "help - to see this prompt again;\n" +
             "exit - to quit from this program.";
 
@@ -35,14 +37,14 @@ public class FileViewer {
                 input = reader.nextLine().trim();
                 if (input.equalsIgnoreCase("exit")) break;
                 if (input.isEmpty()) continue;
-                parseCommand(input);
+                parseCommand(input, reader);
             }
         }
     }
 
 
 
-    private static void parseCommand(String input) {
+    private static void parseCommand(String input, Scanner reader) {
         assert input != null : "The input string mustn't be null!";
 
         switch (input) {
@@ -72,10 +74,53 @@ public class FileViewer {
             case "mk":
                 createNewFile(terms);
                 break;
+            case "rm":
+                removeFile(terms, reader);
+                break;
             default:
                 System.out.println("Such command doesn't exist, ot its using is incorrect.");
                 System.out.println("Enter - help <COMMAND> - to know how to use the command.");
         }
+    }
+
+    private static boolean removeFile(String[] terms, Scanner reader) {
+        if (terms.length != 2) {
+            System.out.println("This command requires one argument.");
+            return false;
+        }
+
+        Path filename = normalizePath(terms[1]);
+        if (filename == null) return false;
+
+        if (Files.isDirectory(filename)) {
+            System.out.println("This command does not allow to delete a directory.");
+            return false;
+        }
+
+        if (!Files.isRegularFile(filename)) {
+            System.out.println("There is no file with the name you've entered.");
+            return false;
+        }
+
+        for (String input = null; ; ) {
+            System.out.printf("  Are you sure you want to delete the file %s? (y/n)%n", filename.toString());
+            input = reader.nextLine().trim();
+            if (input.equalsIgnoreCase("y")) break;
+            if (input.equalsIgnoreCase("n")) return false;
+            System.out.println("  You should enter either 'y' or 'n'.");
+        }
+
+        try {
+            Files.delete(filename);
+        } catch (NoSuchFileException e) {
+            System.out.println("There is no file with the name you've entered.");
+            return false;
+        } catch (IOException e) {
+            System.out.println("This file can't be deleted (check its permissions).");
+            return false;
+        }
+
+        return true;
     }
 
     private static boolean createNewFile(String[] terms) {
@@ -109,7 +154,7 @@ public class FileViewer {
         return true;
     }
 
-    public static void setWorkingDirectory(Path workingDirectory) {
+    private static void setWorkingDirectory(Path workingDirectory) {
         FileViewer.workingDirectory = workingDirectory;
     }
 
