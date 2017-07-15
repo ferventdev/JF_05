@@ -74,7 +74,7 @@ public class FileViewer {
 
     private static void printTextFileContent(String[] terms) {
         if (terms.length < 2 || terms.length > 3) {
-            System.out.println("This command requires either one or two arguments");
+            System.out.println("This command requires either one or two arguments.");
             return;
         }
 
@@ -90,8 +90,8 @@ public class FileViewer {
             filename = Paths.get(getCurrentDirectory(), terms[1].substring(1));
         } else filename = Paths.get(terms[1]);
 
-        if (!Files.exists(filename)) {
-            System.out.println("There is no such file to view.");
+        if (!Files.isReadable(filename) || !Files.isRegularFile(filename)) {
+            System.out.println("There is no such file to view, or it can't be read.");
             return;
         }
 
@@ -109,7 +109,9 @@ public class FileViewer {
             while ((line = reader.readLine()) != null) {
                 System.out.println(line);
             }
+            System.out.flush();
         } catch (SecurityException | IOException e) {
+//            e.printStackTrace();
             System.out.println("Unfortunately, an error occured while reading this text file.");
             return;
         }
