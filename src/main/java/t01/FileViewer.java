@@ -8,7 +8,6 @@ import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
-import java.util.StringJoiner;
 
 /**
  * Created by Aleksandr Shevkunenko on 14.07.2017.
@@ -16,14 +15,14 @@ import java.util.StringJoiner;
 public class FileViewer {
 
     static final String COMMAND_PREVIEW = "You can use the following commands:\n" +
-            "pwd - to see the current (working) directory;\n" +
-            "ls - to see the content of the current directory;\n" +
-            "cat - to see the content of the text file;\n" +
-            "cd - to change the current directory;\n" +
-            "mk - to create an empty file in the current directory;\n" +
-            "rm - to remove a file;\n" +
-            "help - to see this prompt again;\n" +
-            "exit - to quit from this program.";
+            "pwd   - to see the current (working) directory;\n" +
+            "ls    - to see the content of the current directory;\n" +
+            "cat   - to see the content of the text file;\n" +
+            "cd    - to change the current directory;\n" +
+            "mk    - to create an empty file in the current directory;\n" +
+            "rm    - to remove a file;\n" +
+            "help  - to see this prompt again;\n" +
+            "exit  - to quit from this program.";
 
     static Path workingDirectory = Paths.get(System.getProperty("user.dir"));
 
@@ -41,7 +40,6 @@ public class FileViewer {
             }
         }
     }
-
 
 
     // tries to recognize the command and invoke the appropriate command handler
@@ -118,8 +116,8 @@ public class FileViewer {
         try {
             Files.delete(filename);
         } catch (NoSuchFileException e) {
-                System.out.println("There is no file with the name you've entered.");
-                return false;
+            System.out.println("There is no file with the name you've entered.");
+            return false;
         } catch (IOException e) {
             System.out.println("This file can't be deleted (check its permissions).");
             return false;
