@@ -218,7 +218,6 @@ public class FileViewer {
             }
             System.out.flush();
         } catch (SecurityException | IOException e) {
-//            e.printStackTrace();
             System.out.println("Unfortunately, an I/O error occurred while reading this text file.");
             return false;
         }
