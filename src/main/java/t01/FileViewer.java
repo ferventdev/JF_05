@@ -19,7 +19,8 @@ public class FileViewer {
     static final String COMMAND_PREVIEW = "You can use the following commands:\n" +
             "pwd - to see the current (working) directory);\n" +
             "ls - to see the content of the current directory;\n" +
-            "cat - to see the content of the text file\n" +
+            "cat - to see the content of the text file;\n" +
+            "cd - to change the current directory;\n" +
             "help - to see this prompt again;\n" +
             "exit - to quit from this program.";
 
@@ -66,10 +67,34 @@ public class FileViewer {
             case "cat":
                 printTextFileContent(terms);
                 break;
+            case "cd":
+                changeCurrentDirectory(terms);
+                break;
             default:
                 System.out.println("Such command doesn't exist, ot its using is incorrect.");
                 System.out.println("Enter - help <COMMAND> - to know how to use the command.");
         }
+    }
+
+    public static void setWorkingDirectory(Path workingDirectory) {
+        FileViewer.workingDirectory = workingDirectory;
+    }
+
+    private static void changeCurrentDirectory(String[] terms) {
+        if (terms.length != 2) {
+            System.out.println("This command requires one argument.");
+            return;
+        }
+
+        Path dirname = normalizePath(terms[1]);
+        if (dirname == null) return;
+
+        if (!Files.isDirectory(dirname)) {
+            System.out.println("There is no such directory, or it's inaccessible.");
+            return;
+        }
+
+        setWorkingDirectory(dirname);
     }
 
     private static void printTextFileContent(String[] terms) {
@@ -78,17 +103,8 @@ public class FileViewer {
             return;
         }
 
-        Path filename = null;
-        if (terms[1].startsWith("..")) {
-            Path parent = Paths.get(getCurrentDirectory()).getParent();
-            if (parent == null) {
-                System.out.println("The current directory doesn't have a parent directory.");
-                return;
-            }
-            filename = Paths.get(parent.toString(), terms[1].substring(2));
-        } else if (terms[1].startsWith(".")) {
-            filename = Paths.get(getCurrentDirectory(), terms[1].substring(1));
-        } else filename = Paths.get(terms[1]);
+        Path filename = normalizePath(terms[1]);
+        if (filename == null) return;
 
         if (!Files.isReadable(filename) || !Files.isRegularFile(filename)) {
             System.out.println("There is no such file to view, or it can't be read.");
@@ -115,6 +131,18 @@ public class FileViewer {
             System.out.println("Unfortunately, an error occured while reading this text file.");
             return;
         }
+    }
+
+    private static Path normalizePath(String aPath) {
+        if (aPath.startsWith("..")) {
+            Path parent = Paths.get(getCurrentDirectory()).getParent();
+            if (parent == null) {
+                System.out.println("The current directory doesn't have a parent directory.");
+                return null;
+            }
+            return Paths.get(parent.toString(), aPath.substring(2));
+        } else if (aPath.startsWith(".")) return Paths.get(getCurrentDirectory(), aPath.substring(1));
+        else return Paths.get(aPath);
     }
 
     static String getCurrentDirectoryContent() {
