@@ -94,7 +94,10 @@ public class FileViewer {
             return;
         }
 
+        String prevDir = getCurrentDirectory();
         setWorkingDirectory(dirname);
+        if (!prevDir.equals(getCurrentDirectory()))
+            System.out.printf("The current directory was changed to: %s%n", getCurrentDirectory());
     }
 
     private static void printTextFileContent(String[] terms) {
