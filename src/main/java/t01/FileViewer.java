@@ -15,7 +15,7 @@ import java.util.StringJoiner;
  */
 public class FileViewer {
     static final String COMMAND_PREVIEW = "You can use the following commands:\n" +
-            "pwd - to see the current (working) directory);\n" +
+            "pwd - to see the current (working) directory;\n" +
             "ls - to see the content of the current directory;\n" +
             "cat - to see the content of the text file;\n" +
             "cd - to change the current directory;\n" +
@@ -45,7 +45,7 @@ public class FileViewer {
     private static void parseCommand(String input) {
         assert input != null : "The input string mustn't be null!";
 
-        switch (input.toLowerCase()) {
+        switch (input) {
             case "help":
                 System.out.println(COMMAND_PREVIEW);
                 return;
@@ -60,7 +60,7 @@ public class FileViewer {
         String[] terms = input.split("\\s+");
         assert terms.length != 0 : "The input string mustn't be empty!";
 
-        switch (terms[0].toLowerCase()) {
+        switch (terms[0]) {
             case "help":
                 break;
             case "cat":
@@ -84,7 +84,7 @@ public class FileViewer {
             return false;
         }
 
-        if (terms[1].contains(System.getProperty("file.separator"))) {
+        if (terms[1].contains("\\") || terms[1].contains("/")) {
             System.out.println("You should use just a file name without any directory names included.");
             return false;
         }
