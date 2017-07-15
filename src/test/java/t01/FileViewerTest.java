@@ -14,6 +14,6 @@ import static org.junit.Assert.*;
 public class FileViewerTest {
     @Test
     public void fileViewerTest() throws Exception {
-        System.out.println(Paths.get(".\\src\\main").normalize());
+        System.out.println(System.getProperty("file.separator"));
     }
 }

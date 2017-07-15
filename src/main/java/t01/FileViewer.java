@@ -4,9 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -21,6 +19,7 @@ public class FileViewer {
             "ls - to see the content of the current directory;\n" +
             "cat - to see the content of the text file;\n" +
             "cd - to change the current directory;\n" +
+            "mk - to create an empty file in the current directory;\n" +
             "help - to see this prompt again;\n" +
             "exit - to quit from this program.";
 
@@ -70,48 +69,85 @@ public class FileViewer {
             case "cd":
                 changeCurrentDirectory(terms);
                 break;
+            case "mk":
+                createNewFile(terms);
+                break;
             default:
                 System.out.println("Such command doesn't exist, ot its using is incorrect.");
                 System.out.println("Enter - help <COMMAND> - to know how to use the command.");
         }
     }
 
+    private static boolean createNewFile(String[] terms) {
+        if (terms.length != 2) {
+            System.out.println("This command requires one argument.");
+            return false;
+        }
+
+        if (terms[1].contains(System.getProperty("file.separator"))) {
+            System.out.println("You should use just a file name without any directory names included.");
+            return false;
+        }
+
+        Path filename = null;
+        try {
+            filename = Paths.get(getCurrentDirectory(), terms[1]);
+        } catch (InvalidPathException e) {
+            System.out.println("The file name you've entered is invalid.");
+            return false;
+        }
+
+        try {
+            Files.createFile(filename);
+        } catch (FileAlreadyExistsException x) {
+            System.out.println("The file with this name already exists.");
+            return false;
+        } catch (IOException x) {
+            System.out.println("Unfortunately, an I/O error occurred during file creation.");
+            return false;
+        }
+        return true;
+    }
+
     public static void setWorkingDirectory(Path workingDirectory) {
         FileViewer.workingDirectory = workingDirectory;
     }
 
-    private static void changeCurrentDirectory(String[] terms) {
+    private static boolean changeCurrentDirectory(String[] terms) {
         if (terms.length != 2) {
             System.out.println("This command requires one argument.");
-            return;
+            return false;
         }
 
         Path dirname = normalizePath(terms[1]);
-        if (dirname == null) return;
+        if (dirname == null) return false;
 
         if (!Files.isDirectory(dirname)) {
             System.out.println("There is no such directory, or it's inaccessible.");
-            return;
+            return false;
         }
 
         String prevDir = getCurrentDirectory();
         setWorkingDirectory(dirname);
-        if (!prevDir.equals(getCurrentDirectory()))
+        if (!prevDir.equals(getCurrentDirectory())) {
             System.out.printf("The current directory was changed to: %s%n", getCurrentDirectory());
+            return true;
+        }
+        return false;
     }
 
-    private static void printTextFileContent(String[] terms) {
+    private static boolean printTextFileContent(String[] terms) {
         if (terms.length < 2 || terms.length > 3) {
             System.out.println("This command requires either one or two arguments.");
-            return;
+            return false;
         }
 
         Path filename = normalizePath(terms[1]);
-        if (filename == null) return;
+        if (filename == null) return false;
 
         if (!Files.isReadable(filename) || !Files.isRegularFile(filename)) {
             System.out.println("There is no such file to view, or it can't be read.");
-            return;
+            return false;
         }
 
         Charset charset = null;
@@ -120,7 +156,7 @@ public class FileViewer {
             else charset = Charset.defaultCharset();
         } catch (IllegalArgumentException e) {
             System.out.println("You've entered the wrong or unsupported charset.");
-            return;
+            return false;
         }
 
         try (BufferedReader reader = Files.newBufferedReader(filename, charset)) {
@@ -131,9 +167,10 @@ public class FileViewer {
             System.out.flush();
         } catch (SecurityException | IOException e) {
 //            e.printStackTrace();
-            System.out.println("Unfortunately, an error occured while reading this text file.");
-            return;
+            System.out.println("Unfortunately, an I/O error occurred while reading this text file.");
+            return false;
         }
+        return true;
     }
 
     private static Path normalizePath(String aPath) {
