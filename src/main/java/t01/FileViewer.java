@@ -1,6 +1,9 @@
 package t01;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -16,6 +19,7 @@ public class FileViewer {
     static final String COMMAND_PREVIEW = "You can use the following commands:\n" +
             "pwd - to see the current (working) directory);\n" +
             "ls - to see the content of the current directory;\n" +
+            "cat - to see the content of the text file\n" +
             "help - to see this prompt again;\n" +
             "exit - to quit from this program.";
 
@@ -69,8 +73,8 @@ public class FileViewer {
     }
 
     private static void printTextFileContent(String[] terms) {
-        if (terms.length < 2) {
-            System.out.println("This command requires at least one argument (the file you'd like to view).");
+        if (terms.length < 2 || terms.length > 3) {
+            System.out.println("This command requires either one or two arguments");
             return;
         }
 
@@ -91,7 +95,24 @@ public class FileViewer {
             return;
         }
 
+        Charset charset = null;
+        try {
+            if (terms.length == 3) charset = Charset.forName(terms[2]);
+            else charset = Charset.defaultCharset();
+        } catch (IllegalArgumentException e) {
+            System.out.println("You've entered the wrong or unsupported charset.");
+            return;
+        }
 
+        try (BufferedReader reader = Files.newBufferedReader(filename, charset)) {
+            String line = null;
+            while ((line = reader.readLine()) != null) {
+                System.out.println(line);
+            }
+        } catch (SecurityException | IOException e) {
+            System.out.println("Unfortunately, an error occured while reading this text file.");
+            return;
+        }
     }
 
     static String getCurrentDirectoryContent() {
