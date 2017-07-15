@@ -28,7 +28,7 @@ public class FileViewer {
     static Path workingDirectory = Paths.get(System.getProperty("user.dir"));
 
 
-
+    // main
     public static void main(String[] args) {
         try (Scanner reader = new Scanner(System.in)) {
             System.out.println(COMMAND_PREVIEW);
@@ -44,10 +44,11 @@ public class FileViewer {
 
 
 
+    // tries to recognize the command and invoke the appropriate command handler
     private static void parseCommand(String input, Scanner reader) {
         assert input != null : "The input string mustn't be null!";
 
-        switch (input) {
+        switch (input.toLowerCase()) {
             case "help":
                 System.out.println(COMMAND_PREVIEW);
                 return;
@@ -62,7 +63,7 @@ public class FileViewer {
         String[] terms = input.split("\\s+");
         assert terms.length != 0 : "The input string mustn't be empty!";
 
-        switch (terms[0]) {
+        switch (terms[0].toLowerCase()) {
             case "help":
                 break;
             case "cat":
@@ -83,6 +84,7 @@ public class FileViewer {
         }
     }
 
+    // removes a file if possible
     private static boolean removeFile(String[] terms, Scanner reader) {
         if (terms.length != 2) {
             System.out.println("This command requires one argument.");
@@ -98,8 +100,11 @@ public class FileViewer {
         }
 
         if (!Files.isRegularFile(filename)) {
-            System.out.println("There is no file with the name you've entered.");
-            return false;
+            filename = Paths.get(getCurrentDirectory(), filename.getFileName().toString());
+            if (!Files.isRegularFile(filename)) {
+                System.out.println("There is no file with the name you've entered.");
+                return false;
+            }
         }
 
         for (String input = null; ; ) {
@@ -113,8 +118,8 @@ public class FileViewer {
         try {
             Files.delete(filename);
         } catch (NoSuchFileException e) {
-            System.out.println("There is no file with the name you've entered.");
-            return false;
+                System.out.println("There is no file with the name you've entered.");
+                return false;
         } catch (IOException e) {
             System.out.println("This file can't be deleted (check its permissions).");
             return false;
@@ -123,6 +128,7 @@ public class FileViewer {
         return true;
     }
 
+    // creates a new file if possible
     private static boolean createNewFile(String[] terms) {
         if (terms.length != 2) {
             System.out.println("This command requires one argument.");
@@ -154,10 +160,12 @@ public class FileViewer {
         return true;
     }
 
+    // setter for the current (working) directory
     private static void setWorkingDirectory(Path workingDirectory) {
         FileViewer.workingDirectory = workingDirectory;
     }
 
+    // changes the current directory if possible
     private static boolean changeCurrentDirectory(String[] terms) {
         if (terms.length != 2) {
             System.out.println("This command requires one argument.");
@@ -181,6 +189,7 @@ public class FileViewer {
         return false;
     }
 
+    // prints a text file content to the standard output if possible
     private static boolean printTextFileContent(String[] terms) {
         if (terms.length < 2 || terms.length > 3) {
             System.out.println("This command requires either one or two arguments.");
@@ -218,6 +227,7 @@ public class FileViewer {
         return true;
     }
 
+    // replaces . with current dir and .. with parent dir at the beginning of the path string
     private static Path normalizePath(String aPath) {
         if (aPath.startsWith("..")) {
             Path parent = Paths.get(getCurrentDirectory()).getParent();
@@ -230,6 +240,7 @@ public class FileViewer {
         else return Paths.get(aPath);
     }
 
+    // lists all directories and files in the current directory
     static String getCurrentDirectoryContent() {
         File[] filesAndDirs = workingDirectory.toFile().listFiles();
         List<String> files = new ArrayList<>();
@@ -244,6 +255,7 @@ public class FileViewer {
         return String.join("\n", dirs);
     }
 
+    // returns the current directory in a string representation
     static String getCurrentDirectory() {
         return workingDirectory.toString();
     }
