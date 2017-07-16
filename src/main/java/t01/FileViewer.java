@@ -23,7 +23,7 @@ public class FileViewer {
             "mk    - to create an empty file in the current directory;\n" +
             "rm    - to remove a file;\n" +
             "wr    - to write (append) into the existing text file;\n" +
-            "help  - to see this command prompt again;\n" +
+            "help  - to see this command prompt again, or - help <command> - for the command description;\n" +
             "exit  - to quit from this program.";
 
     static Path workingDirectory = Paths.get(System.getProperty("user.dir"));
@@ -65,6 +65,7 @@ public class FileViewer {
 
         switch (terms[0].toLowerCase()) {
             case "help":
+                printCommandHelp(terms);
                 break;
             case "cat":
                 printTextFileContent(terms);
@@ -83,8 +84,63 @@ public class FileViewer {
                 break;
             default:
                 System.out.println("  Such command doesn't exist, ot its using is incorrect.");
-                System.out.println("  Enter - help <COMMAND> - to know how to use the command.");
+                System.out.println("  Enter - help <command> - to know how to use the command.");
         }
+    }
+
+    private static void printCommandHelp(String[] terms) {
+        String info =
+        "pwd   - to see the current (working) directory;\n" +
+                "ls    - to see the content of the current directory;\n" +
+                "cat   - to see the content of the text file;\n" +
+                "cd    - to change the current directory;\n" +
+                "mk    - to create an empty file in the current directory;\n" +
+                "rm    - to remove a file;\n" +
+                "wr    - to write (append) into the existing text file;\n" +
+                "help  - to see this command prompt again, or - help <COMMAND> - for the command description;\n" +
+                "exit  - to quit from this program.";
+
+        switch (terms[1].toLowerCase()) {
+            case "help":
+                info = "  This command prints all commands preview (prompt) if entered without any arguments.\n" +
+                        "  And when it's entered with one argument (which stands for the command of interest), it prints the command's description.\n" +
+                        "  Using:\n  help <command>";
+                break;
+            case "pwd":
+                info = "  This command prints the current (working) directory. It needs no arguments.\n" +
+                        "  Using:\n  pwd";
+                break;
+            case "ls":
+                info = "  This command prints the content of the current (working) directory. It needs no agruments.\n" +
+                        "  Using:\n  ls";
+                break;
+            case "exit":
+                info = "  This command quits from this program. It needs no arguments.\n" +
+                        "  Using:\n  exit";
+                break;
+            case "cat":
+                info = "  This command prints the content of the text file. It needs at least one argument, which is the name of the file to be read.\n" +
+                        "  Second argument is optional and, if present, means the charset (encoding) to read this file with.\n" +
+                        "  Using:\n  cat <file_to_be_read> (<encoding>)";
+                break;
+            case "cd":
+                info = "  This command changes the current (working) directory to another one. It needs one argument, which is the new directory.\n" +
+                        "  Using:\n  cd <another_directory>";
+                break;
+            case "mk":
+                info = "  This command creates an empty file in the current (working) directory. It needs one argument - the name of this new (empty) file.\n" +
+                        "  The name of this new file musn't contain any directories.\n"
+                        "  Using:\n  mk";
+                break;
+            case "rm":
+                info = "";
+                break;
+            case "wr":
+                info = "";
+                break;
+            default: info = "  There's no help on this command, because this command doesn't exist.";
+        }
+        System.out.println(info);
     }
 
     static boolean writeToEndOfFile(String[] terms, Scanner reader) {
