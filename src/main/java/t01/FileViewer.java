@@ -1,6 +1,7 @@
 package t01;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -21,6 +22,7 @@ public class FileViewer {
             "cd    - to change the current directory;\n" +
             "mk    - to create an empty file in the current directory;\n" +
             "rm    - to remove a file;\n" +
+            "wr    - to write (append) into the existing text file;\n" +
             "help  - to see this prompt again;\n" +
             "exit  - to quit from this program.";
 
@@ -43,7 +45,7 @@ public class FileViewer {
 
 
     // tries to recognize the command and invoke the appropriate command handler
-    private static void parseCommand(String input, Scanner reader) {
+    static void parseCommand(String input, Scanner reader) {
         assert input != null : "The input string mustn't be null!";
 
         switch (input.toLowerCase()) {
@@ -76,14 +78,74 @@ public class FileViewer {
             case "rm":
                 removeFile(terms, reader);
                 break;
+            case "wr":
+                writeToEndOfFile(terms, reader);
+                break;
             default:
                 System.out.println("Such command doesn't exist, ot its using is incorrect.");
                 System.out.println("Enter - help <COMMAND> - to know how to use the command.");
         }
     }
 
+    static boolean writeToEndOfFile(String[] terms, Scanner reader) {
+        if (terms.length < 2 || terms.length > 3) {
+            System.out.println("This command requires either one or two arguments.");
+            return false;
+        }
+
+        Path filename = normalizePath(terms[1]);
+        if (filename == null) return false;
+
+        if (!Files.isWritable(filename)) {
+            System.out.println("This file doesn't exist, or you don't have the permission to write into it.");
+            return false;
+        }
+
+        Charset charset = null;
+        try {
+            if (terms.length == 3) charset = Charset.forName(terms[2]);
+            else charset = Charset.defaultCharset();
+        } catch (IllegalArgumentException e) {
+            System.out.println("You've entered the wrong or unsupported charset.");
+            return false;
+        }
+
+        System.out.println("  Enter the text that you'd like to write to the end of the file.");
+        System.out.println("  When done, leave two empty lines (press Enter two times) to complete your input.");
+
+        StringBuilder text = new StringBuilder();
+        for (String input = null;;) {
+            input = reader.nextLine();
+            text.append(String.format("%s%n", input));
+            if (input.isEmpty()) {
+                if ((input = reader.nextLine()).isEmpty()) break;
+                else text.append(String.format("%s%n", input));
+            }
+        }
+
+        System.out.println("Text input is complete.");
+
+        for (String input = null;;) {
+            System.out.printf("Would you like to write the entered text to the end of file %s and save the file? (y/n)%n", filename.toString());
+            input = reader.nextLine().trim();
+            if (input.equalsIgnoreCase("y")) break;
+            if (input.equalsIgnoreCase("n")) return false;
+            System.out.println("  You should enter either 'y' or 'n'.");
+        }
+
+        try (BufferedWriter writer = Files.newBufferedWriter(filename, charset)) {
+            writer.append(text);
+            writer.flush();
+        } catch (IOException e) {
+            System.out.printf("Unfortunately, an I/O error occurred while writing or saving the file %s.%n", filename);
+            return false;
+        }
+
+        return true;
+    }
+
     // removes a file if possible
-    private static boolean removeFile(String[] terms, Scanner reader) {
+    static boolean removeFile(String[] terms, Scanner reader) {
         if (terms.length != 2) {
             System.out.println("This command requires one argument.");
             return false;
@@ -127,7 +189,7 @@ public class FileViewer {
     }
 
     // creates a new file if possible
-    private static boolean createNewFile(String[] terms) {
+    static boolean createNewFile(String[] terms) {
         if (terms.length != 2) {
             System.out.println("This command requires one argument.");
             return false;
@@ -159,12 +221,12 @@ public class FileViewer {
     }
 
     // setter for the current (working) directory
-    private static void setWorkingDirectory(Path workingDirectory) {
+    static void setWorkingDirectory(Path workingDirectory) {
         FileViewer.workingDirectory = workingDirectory;
     }
 
     // changes the current directory if possible
-    private static boolean changeCurrentDirectory(String[] terms) {
+    static boolean changeCurrentDirectory(String[] terms) {
         if (terms.length != 2) {
             System.out.println("This command requires one argument.");
             return false;
@@ -188,7 +250,7 @@ public class FileViewer {
     }
 
     // prints a text file content to the standard output if possible
-    private static boolean printTextFileContent(String[] terms) {
+    static boolean printTextFileContent(String[] terms) {
         if (terms.length < 2 || terms.length > 3) {
             System.out.println("This command requires either one or two arguments.");
             return false;
@@ -225,7 +287,7 @@ public class FileViewer {
     }
 
     // replaces . with current dir and .. with parent dir at the beginning of the path string
-    private static Path normalizePath(String aPath) {
+    static Path normalizePath(String aPath) {
         if (aPath.startsWith("..")) {
             Path parent = Paths.get(getCurrentDirectory()).getParent();
             if (parent == null) {
