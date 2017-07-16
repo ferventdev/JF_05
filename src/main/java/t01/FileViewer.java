@@ -23,7 +23,7 @@ public class FileViewer {
             "mk    - to create an empty file in the current directory;\n" +
             "rm    - to remove a file;\n" +
             "wr    - to write (append) into the existing text file;\n" +
-            "help  - to see this prompt again;\n" +
+            "help  - to see this command prompt again;\n" +
             "exit  - to quit from this program.";
 
     static Path workingDirectory = Paths.get(System.getProperty("user.dir"));
@@ -301,6 +301,7 @@ public class FileViewer {
             System.out.flush();
         } catch (SecurityException | IOException e) {
             System.out.println("  Unfortunately, an I/O error occurred while reading this text file.");
+            System.out.println("  Maybe, you need to try another charset to read this file.");
             return false;
         }
         return true;
