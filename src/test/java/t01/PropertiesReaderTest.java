@@ -13,21 +13,22 @@ import static org.junit.Assert.*;
  * Created by Aleksandr Shevkunenko on 17.07.2017.
  */
 public class PropertiesReaderTest {
-    Properties p;
+
+    Properties propsForTests;
 
     @Before
     public void setUp() throws Exception {
         try (FileOutputStream f = new FileOutputStream("src\\main\\resources\\forTest.properties")) {
-            p = new Properties();
-            p.setProperty("parameter1", "value1");
-            p.setProperty("parameter2", "value2");
-            p.setProperty("parameter3", "value3");
-            p.store(f, "Property file created for tests");
+            propsForTests = new Properties();
+            propsForTests.setProperty("parameter1", "value1");
+            propsForTests.setProperty("parameter2", "value2");
+            propsForTests.setProperty("parameter3", "value3");
+            propsForTests.store(f, "Property file created for tests");
         }
     }
 
     @Test
-    public void readAll() throws Exception {
+    public void readAllTest() throws Exception {
         PropertiesReader pr = new PropertiesReader();
 
         assertThat(pr.getStatus(), is(PropertiesReader.statusMessage[0]));
@@ -44,9 +45,27 @@ public class PropertiesReaderTest {
 
         assertThat(pr.getStatus(), is(PropertiesReader.statusMessage[1]));
         assertThat(pr.getError(), is(PropertiesReader.errorMessage[0]));
-        assertThat(pr.getProperties(), is(p));
+        assertThat(pr.getProperties(), is(propsForTests));
 
 //        System.out.println(pr.getProperties());
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void readPropertyWithNullTest() throws Exception {
+        PropertiesReader pr = new PropertiesReader();
+        pr.readProperty("src\\main\\resources\\forTest.properties", null);
+    }
+
+    @Test
+    public void readPropertyTest() throws Exception {
+        PropertiesReader pr = new PropertiesReader();
+
+        String value = pr.readProperty("src\\main\\resources\\forTest.properties", "parameter1");
+
+        assertThat(value, is(propsForTests.getProperty("parameter1")));
+
+        value = pr.readProperty("src\\main\\resources\\forTest.properties", "parameter10");
+
+        assertThat(value, is("No value found for the key parameter10"));
+    }
 }

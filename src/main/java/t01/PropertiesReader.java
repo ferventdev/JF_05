@@ -51,4 +51,12 @@ public class PropertiesReader {
             error = errorMessage[3];
         }
     }
+
+    public String readProperty(String filename, String key) {
+        if (key == null) throw new IllegalArgumentException("The property key mustn't be null.");
+
+        if (properties == null) readAll(filename);
+
+        return properties.getProperty(key, "No value found for the key " + key);
+    }
 }
