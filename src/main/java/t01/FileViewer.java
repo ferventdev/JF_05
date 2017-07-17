@@ -88,7 +88,8 @@ public class FileViewer {
         }
     }
 
-    private static void printCommandHelp(String[] terms) {
+    // prints the command's help
+    static void printCommandHelp(String[] terms) {
         String info = "";
 
         switch (terms[1].toLowerCase()) {
@@ -142,6 +143,7 @@ public class FileViewer {
         System.out.println(info);
     }
 
+    // writes the entered text to the end of existing file if possible
     static boolean writeToEndOfFile(String[] terms, Scanner reader) {
         if (terms.length < 2 || terms.length > 3) {
             System.out.println("  This command requires either one or two arguments.");
