@@ -39,11 +39,15 @@ public class PropertiesReader {
             properties = new Properties();
             properties.load(f);
             status = statusMessage[1];
+            error = errorMessage[0];
         } catch (FileNotFoundException e) {
+            properties = null;
             error = errorMessage[1];
         } catch (IllegalArgumentException e) {
+            properties = null;
             error = errorMessage[2];
         } catch (IOException e) {
+            properties = null;
             error = errorMessage[3];
         }
     }
