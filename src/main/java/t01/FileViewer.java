@@ -89,16 +89,7 @@ public class FileViewer {
     }
 
     private static void printCommandHelp(String[] terms) {
-        String info =
-        "pwd   - to see the current (working) directory;\n" +
-                "ls    - to see the content of the current directory;\n" +
-                "cat   - to see the content of the text file;\n" +
-                "cd    - to change the current directory;\n" +
-                "mk    - to create an empty file in the current directory;\n" +
-                "rm    - to remove a file;\n" +
-                "wr    - to write (append) into the existing text file;\n" +
-                "help  - to see this command prompt again, or - help <COMMAND> - for the command description;\n" +
-                "exit  - to quit from this program.";
+        String info = "";
 
         switch (terms[1].toLowerCase()) {
             case "help":
@@ -120,23 +111,31 @@ public class FileViewer {
                 break;
             case "cat":
                 info = "  This command prints the content of the text file. It needs at least one argument, which is the name of the file to be read.\n" +
+                        "  It should be a full path, but may include . or .. at the beginning for the current or parent directory respectively.\n" +
                         "  Second argument is optional and, if present, means the charset (encoding) to read this file with.\n" +
                         "  Using:\n  cat <file_to_be_read> (<encoding>)";
                 break;
             case "cd":
                 info = "  This command changes the current (working) directory to another one. It needs one argument, which is the new directory.\n" +
+                        "  It should be a full path, but may include . or .. at the beginning for the current or parent directory respectively.\n" +
                         "  Using:\n  cd <another_directory>";
                 break;
             case "mk":
                 info = "  This command creates an empty file in the current (working) directory. It needs one argument - the name of this new (empty) file.\n" +
-                        "  The name of this new file musn't contain any directories.\n"
-                        "  Using:\n  mk";
+                        "  The name of this new file mustn't contain any directories (means that it's not a full path).\n" +
+                        "  Using:\n  mk <new_file>";
                 break;
             case "rm":
-                info = "";
+                info = "  This command removes the existing file. It needs one argument - the name of this file.\n" +
+                        "  It should be a full path, but may include . or .. at the beginning for the current or parent directory respectively.\n" +
+                        "  Using:\n  rm <file_to_be_removed>";
                 break;
             case "wr":
-                info = "";
+                info = "  This command writes the multiline text entered by the user into the end of existing text file and saves this file.\n" +
+                        "  It needs at least one argument, which is the name of the file to be written into.\n" +
+                        "  It should be a full path, but may include . or .. at the beginning for the current or parent directory respectively.\n" +
+                        "  Second argument is optional and, if present, means the charset (encoding) to write the text to this file with.\n" +
+                        "  Using:\n  wr <file_to_be_written_to> (<encoding>)";
                 break;
             default: info = "  There's no help on this command, because this command doesn't exist.";
         }
@@ -365,14 +364,15 @@ public class FileViewer {
 
     // replaces . with current dir and .. with parent dir at the beginning of the path string
     static Path normalizePath(String aPath) {
-        if (aPath.startsWith("..")) {
+        if (aPath.startsWith("../") || aPath.startsWith("..\\") || aPath.equals("..")) {
             Path parent = Paths.get(getCurrentDirectory()).getParent();
             if (parent == null) {
                 System.out.println("  The current directory doesn't have a parent directory.");
                 return null;
             }
             return Paths.get(parent.toString(), aPath.substring(2));
-        } else if (aPath.startsWith(".")) return Paths.get(getCurrentDirectory(), aPath.substring(1));
+        } else if (aPath.startsWith("./") || aPath.startsWith(".\\") || aPath.equals("."))
+            return Paths.get(getCurrentDirectory(), aPath.substring(1));
         else return Paths.get(aPath);
     }
 
